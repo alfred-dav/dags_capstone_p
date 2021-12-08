@@ -10,10 +10,10 @@ Extract data from Postgres > Load into GCS
 
 
 default_args = {
-    'owner': 'grisell.reyes',
+    'owner': 'alfredo.davila',
     'depends_on_past': False,    
     'start_date': datetime(2021, 10, 1),
-    'email': ['grisell.reyes@wizeline.com'],
+    'email': ['alfredo.davila@wizeline.com'],
     'email_on_failure': True,
     'email_on_retry': False,
     'retries': 2,
