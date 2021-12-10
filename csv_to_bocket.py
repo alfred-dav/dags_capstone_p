@@ -53,7 +53,7 @@ def clean_data():
     import pandas as pd
     df = pd.read_csv(PATH_FILE)
 
-    df.to_csv(PATH_FILE, sep='|', encoding='utf-8')
+    df.to_csv(PATH_FILE, sep='|', encoding='utf-8',index=False)
 
 
 def csv_to_postgres():
@@ -115,4 +115,4 @@ insert_table = PythonOperator(task_id='csv_to_database',
                    dag=dag)
 
 
-task1 >> upload_file >> clean_task >> create_table >> insert_table
+task1 >> clean_task >> create_table >> insert_table
