@@ -49,7 +49,14 @@ dag = DAG('get_csv_data',
           schedule_interval='@once',
           catchup=False)
 
+def clean_data():
+    df = pd.read_csv(PATH_FILE)
+
+    df.to_csv(PATH_FILE, sep='|', encoding='utf-8')
+
+
 def csv_to_postgres():
+    
     #Open Postgres Connection
     pg_hook = PostgresHook(postgres_conn_id='postgres_default')
     get_postgres_conn = PostgresHook(postgres_conn_id='postgres_default').get_conn()
@@ -57,7 +64,7 @@ def csv_to_postgres():
     # CSV loading to table
     with open(PATH_FILE, "r") as f:
         next(f)
-        curr.copy_from(f, 'user_purchase', sep=",")
+        curr.copy_from(f, 'user_purchase', sep='|')
         get_postgres_conn.commit()
 
 # [START howto_gcs_environment_variables]
@@ -96,6 +103,10 @@ create_table = PostgresOperator(task_id = 'create_table',
                             postgres_conn_id= 'postgres_default', 
                             autocommit=True,
                             dag= dag)
+clean_task = PythonOperator(task_id='clean_csv',
+                   provide_context=True,
+                   python_callable=clean_data,
+                   dag=dag)
 
 insert_table = PythonOperator(task_id='csv_to_database',
                    provide_context=True,
@@ -103,4 +114,4 @@ insert_table = PythonOperator(task_id='csv_to_database',
                    dag=dag)
 
 
-task1 >> upload_file >> create_table >> insert_table
+task1 >> upload_file >> clean_task >> create_table >> insert_table
