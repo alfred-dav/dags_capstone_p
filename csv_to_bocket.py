@@ -86,6 +86,7 @@ upload_file = LocalFilesystemToGCSOperator(
                     src=PATH_TO_UPLOAD_FILE,
                     dst=DESTINATION_FILE_LOCATION,
                     bucket=BUCKET_NAME,
+                    dag=dag
                 )
 # [END howto_operator_local_filesystem_to_gcs]
 """
