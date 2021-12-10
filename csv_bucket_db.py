@@ -87,22 +87,14 @@ dag = DAG('get_csv_bucket_db',
           catchup=False)
 
 def csv_to_postgres():
-    
-    client = storage.Client()
-
-    bucket = client.get_bucket(BUCKET_NAME)
-
-    blob = bucket.get_blob(FILE_NAME)
-
-    f = blob.download_as_string()
-
     #Open Postgres Connection
     get_postgres_conn = PostgresHook(postgres_conn_id='postgres_default').get_conn()
     curr = get_postgres_conn.cursor()
     # CSV loading to table
-    
-    curr.copy_from(f, 'user_purchase', sep='|')
-    get_postgres_conn.commit()
+    with open(PATH_FILE, "r") as f:
+        next(f)
+        curr.copy_from(f, 'user_purchase', sep='|')
+        get_postgres_conn.commit()
 
 
 
