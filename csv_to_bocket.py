@@ -25,15 +25,6 @@ CONTENT_URL = "http://3.141.34.217/user_purchase.csv"
 BUCKET_NAME = "capstone-db-terra-us"
 PATH_FILE = "/tmp/user_purchase.csv"
 
-def upload_blob():
-    """Uploads a file to the bucket."""
-    destination_blob_name = "user_purchase.csv"
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(BUCKET_NAME)
-    blob = bucket.blob()
-    print(f"Uploading file {PATH_FILE} to {destination_blob_name}")
-    blob.upload_from_filename(PATH_FILE)
-
 def download_upload():
     
     req = requests.get(CONTENT_URL, allow_redirects=True)
@@ -64,9 +55,9 @@ def csv_to_postgres():
     get_postgres_conn = PostgresHook(postgres_conn_id='postgres_default').get_conn()
     curr = get_postgres_conn.cursor()
     # CSV loading to table
-    with open(file_path("cities_clean.csv"), "r") as f:
+    with open(PATH_FILE, "r") as f:
         next(f)
-        curr.copy_from(f, 'cities', sep=",")
+        curr.copy_from(f, 'user_purchase', sep=",")
         get_postgres_conn.commit()
 
 # [START howto_gcs_environment_variables]
@@ -89,12 +80,27 @@ upload_file = LocalFilesystemToGCSOperator(
                     dag=dag
                 )
 # [END howto_operator_local_filesystem_to_gcs]
-"""
-task2 = PythonOperator(task_id='csv_to_database',
+
+create_table = PostgresOperator(task_id = 'create_table',
+                        sql="""
+                        CREATE TABLE IF NOT EXISTS user_purchase (    
+                            invoice_number varchar(10),
+                            stock_code verchar(20),
+                            detail varchar(1000),
+                            quantity INTEGER,
+                            invoice_date timestamp,
+                            unit_price numeric(8,3),
+                            customer_id INTEGER,
+                            country varchar(20));
+                            """,
+                            postgres_conn_id= 'postgres_default', 
+                            autocommit=True,
+                            dag= dag)
+
+insert_table = PythonOperator(task_id='csv_to_database',
                    provide_context=True,
                    python_callable=csv_to_postgres,
                    dag=dag)
-                   """
 
 
-task1 >> upload_file
+task1 >> upload_file >> create_table >> insert_table
