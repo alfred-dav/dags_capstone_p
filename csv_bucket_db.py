@@ -10,7 +10,7 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow import models
 from airflow.providers.google.cloud.transfers.local_to_gcs import LocalFilesystemToGCSOperator
-from airflow.providers.google.cloud.operators.cloud_sql import CloudSQLImportInstanceOperator
+
 
 
 
@@ -91,7 +91,7 @@ def csv_to_postgres():
     get_postgres_conn = PostgresHook(postgres_conn_id='postgres_default').get_conn()
     curr = get_postgres_conn.cursor()
     # CSV loading to table
-    with open(PATH_FILE, "r") as f:
+    with open(IMPORT_URI, "r") as f:
         next(f)
         curr.copy_from(f, 'user_purchase', sep='|')
         get_postgres_conn.commit()
@@ -130,17 +130,11 @@ create_table = PostgresOperator(task_id = 'create_table',
                             autocommit=True,
                             dag= dag)
 
-sql_import_task = CloudSQLImportInstanceOperator(
-                    project_id=GCP_PROJECT_ID, 
-                    body=import_body, 
-                    instance=INSTANCE_NAME, 
-                    task_id='sql_import_task',
-                    dag=dag)
-sql_import_task2 = CloudSQLImportInstanceOperator(
-                    body=import_body, 
-                    instance=INSTANCE_NAME, 
-                    task_id='sql_import_task2',
-                    dag=dag)
 
+insert_table = PythonOperator(task_id='csv_to_database',
+                   provide_context=True,
+                   python_callable=csv_to_postgres,
+                   dag=dag)
 
-get_clean_csv >> upload_file >> create_table >> sql_import_task >> sql_import_task2
+#get_clean_csv >> upload_file >> create_table >> sql_import_task >> sql_import_task2
+get_clean_csv >> upload_file >> create_table >> insert_table
