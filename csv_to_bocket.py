@@ -4,15 +4,17 @@ from os import getenv
 from os import listdir
 from os.path import isfile, join
 from datetime import datetime
-from google.cloud import storage
-import airflow
+from datetime import timedelta
 import os
 import psycopg2
+import airflow
 from airflow import DAG
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
-from datetime import timedelta
+from airflow import models
+from airflow.providers.google.cloud.transfers.local_to_gcs import LocalFilesystemToGCSOperator
+
 
 
 """
@@ -67,12 +69,25 @@ def csv_to_postgres():
         curr.copy_from(f, 'cities', sep=",")
         get_postgres_conn.commit()
 
+# [START howto_gcs_environment_variables]
+BUCKET_NAME = os.environ.get('GCP_GCS_BUCKET', BUCKET_NAME)
+PATH_TO_UPLOAD_FILE = os.environ.get('GCP_GCS_PATH_TO_UPLOAD_FILE', PATH_FILE)
+DESTINATION_FILE_LOCATION = os.environ.get('GCP_GCS_DESTINATION_FILE_LOCATION', 'user_purchase.csv')
+# [END howto_gcs_environment_variables]
+
 
 task1 = PythonOperator(task_id='csv_to_database',
                    provide_context=True,
                    python_callable=download_upload,
                    dag=dag)
-
+# [START howto_operator_local_filesystem_to_gcs]
+upload_file = LocalFilesystemToGCSOperator(
+                    task_id="upload_file",
+                    src=PATH_TO_UPLOAD_FILE,
+                    dst=DESTINATION_FILE_LOCATION,
+                    bucket=BUCKET_NAME,
+                )
+# [END howto_operator_local_filesystem_to_gcs]
 """
 task2 = PythonOperator(task_id='csv_to_database',
                    provide_context=True,
@@ -81,4 +96,4 @@ task2 = PythonOperator(task_id='csv_to_database',
                    """
 
 
-task1
+task1 >> upload_file
