@@ -79,7 +79,7 @@ default_args = {
 }
 
 #name the DAG and configuration
-dag = DAG('get_csv_data',
+dag = DAG('get_csv_bucket_db',
           default_args=default_args,
           schedule_interval='@once',
           catchup=False)
