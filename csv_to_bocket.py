@@ -39,7 +39,7 @@ default_args = {
     'email': ['alfredo.davila@wizeline.com'],
     'email_on_failure': True,
     'email_on_retry': False,
-    'retries': 2,
+    'retries': 0,
     'retry_delay': timedelta(minutes=1)
 }
 
@@ -85,7 +85,7 @@ create_table = PostgresOperator(task_id = 'create_table',
                         sql="""
                         CREATE TABLE IF NOT EXISTS user_purchase (    
                             invoice_number varchar(10),
-                            stock_code verchar(20),
+                            stock_code varchar(20),
                             detail varchar(1000),
                             quantity INTEGER,
                             invoice_date timestamp,
