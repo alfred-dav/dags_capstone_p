@@ -52,9 +52,11 @@ dag = DAG('get_csv_data',
 def clean_data():
     import pandas as pd
     df = pd.read_csv(PATH_FILE)
-    new_dtypes = {"Quantity": int,
-                "CustomerID": int}
-    df = df.astype(new_dtypes)
+
+    int_fields = ["Quantity", "CustomerID"]
+
+    df[list(int_fields)] = df[int_fields].fillna(0.0).astype(int)
+
     df.to_csv(PATH_FILE, sep='|', encoding='utf-8',index=False)
 
 
