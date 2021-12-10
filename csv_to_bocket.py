@@ -50,6 +50,7 @@ dag = DAG('get_csv_data',
           catchup=False)
 
 def clean_data():
+    import pandas as pd
     df = pd.read_csv(PATH_FILE)
 
     df.to_csv(PATH_FILE, sep='|', encoding='utf-8')
