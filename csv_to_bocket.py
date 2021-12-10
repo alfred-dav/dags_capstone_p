@@ -67,7 +67,7 @@ DESTINATION_FILE_LOCATION = os.environ.get('GCP_GCS_DESTINATION_FILE_LOCATION', 
 # [END howto_gcs_environment_variables]
 
 
-task1 = PythonOperator(task_id='csv_to_database',
+task1 = PythonOperator(task_id='get_csv',
                    provide_context=True,
                    python_callable=download_upload,
                    dag=dag)
