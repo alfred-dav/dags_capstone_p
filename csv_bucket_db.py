@@ -41,7 +41,7 @@ import_body = {"importContext": {"fileType": "csv", "uri": IMPORT_URI}}
 # [END howto_operator_cloudsql_import_body]
 
 def download_upload():
-    
+    import pandas as pd
     req = requests.get(CONTENT_URL, allow_redirects=True)
     urlData = req.content
 
