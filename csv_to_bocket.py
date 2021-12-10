@@ -84,13 +84,13 @@ task1 = PythonOperator(task_id='get_csv',
                    python_callable=download_upload,
                    dag=dag)
 # [START howto_operator_local_filesystem_to_gcs]
-upload_file = LocalFilesystemToGCSOperator(
+"""upload_file = LocalFilesystemToGCSOperator(
                     task_id="upload_file",
                     src=PATH_TO_UPLOAD_FILE,
                     dst=DESTINATION_FILE_LOCATION,
                     bucket=BUCKET_NAME,
                     dag=dag
-                )
+                )"""
 # [END howto_operator_local_filesystem_to_gcs]
 
 create_table = PostgresOperator(task_id = 'create_table',
