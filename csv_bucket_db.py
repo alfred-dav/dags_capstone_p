@@ -10,6 +10,8 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow import models
 from airflow.providers.google.cloud.transfers.local_to_gcs import LocalFilesystemToGCSOperator
+from google.cloud import storage
+
 
 
 
@@ -86,15 +88,21 @@ dag = DAG('get_csv_bucket_db',
 
 def csv_to_postgres():
     
+    client = storage.Client()
+
+    bucket = client.get_bucket(BUCKET_NAME)
+
+    blob = bucket.get_blob(FILE_NAME)
+
+    f = blob.download_as_string()
+
     #Open Postgres Connection
-    pg_hook = PostgresHook(postgres_conn_id='postgres_default')
     get_postgres_conn = PostgresHook(postgres_conn_id='postgres_default').get_conn()
     curr = get_postgres_conn.cursor()
     # CSV loading to table
-    with open(IMPORT_URI, "r") as f:
-        next(f)
-        curr.copy_from(f, 'user_purchase', sep='|')
-        get_postgres_conn.commit()
+    
+    curr.copy_from(f, 'user_purchase', sep='|')
+    get_postgres_conn.commit()
 
 
 
